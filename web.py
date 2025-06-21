@@ -6,6 +6,7 @@ import platform
 import time
 import requests
 import threading
+import os
 
 app = Flask(__name__)
 request_log = {}
@@ -13,7 +14,7 @@ ngl_log = {}
 ACTIVE_USERS = {}
 STOP_FLAGS = {}
 user_locks = {}
-VALID_KEY = "khiemdeptrai"
+VALID_KEY = "zprojectduongcongbang"
 
 def load_videos():
     with open('vdtet.json', 'r') as file:
@@ -51,7 +52,6 @@ def random_video():
     if key != VALID_KEY:
         return jsonify({'error': 'Invalid key. Access denied.'}), 403
     return jsonify({'video': video})
-
 
 @app.route('/ngl', methods=['GET'])
 def send_ngl():
@@ -107,4 +107,5 @@ def send_ngl_message(username, message, user_id, stop_flag):
         user_locks.pop(user_id, None)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=300708, debug=True, use_reloader=False)
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
