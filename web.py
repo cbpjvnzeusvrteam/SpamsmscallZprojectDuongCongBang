@@ -21,6 +21,19 @@ def load_videos():
         data = json.load(file)
     return data['videos']
 
+@app.route('/sms', methods=['GET'])
+def send_sms():
+    sdt = request.args.get('sdt')
+    key = request.args.get('key')
+    if key != VALID_KEY:
+        return jsonify({'error': 'Sai key rồi bạn.'}), 403
+    if not sdt:
+        return jsonify({'error': 'Thiếu số điện thoại'}), 400
+    # Bạn có thể gọi hàm xử lý trong sms.py tại đây, ví dụ:
+      result = sms.send_message(sdt)
+      return jsonify({'result': result})
+    return jsonify({'message': f'Đã nhận yêu cầu gửi SMS tới {sdt}'})
+    
 @app.route('/')
 def home():
     return render_template_string('''
