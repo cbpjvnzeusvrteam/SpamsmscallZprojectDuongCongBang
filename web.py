@@ -7,15 +7,16 @@ import time
 import requests
 import threading
 import os
-import sms  # Import module chứa hàm send_message()
+import sms  # File sms.py phải nằm cùng thư mục và có hàm send_message()
 
 app = Flask(__name__)
+VALID_KEY = "zprojectduongcongbang"
+
 request_log = {}
 ngl_log = {}
 ACTIVE_USERS = {}
 STOP_FLAGS = {}
 user_locks = {}
-VALID_KEY = "zprojectduongcongbang"
 
 def load_videos():
     with open('vdtet.json', 'r') as file:
@@ -73,10 +74,10 @@ def send_ngl():
     if key != VALID_KEY:
         return jsonify({'error': 'Mua key liên hệ tele @Dichvumxh307.'}), 403
     if not username or not message:
-        return jsonify({'error': 'Missing username or message parameter'}), 400
+        return jsonify({'error': 'Thiếu username hoặc message'}), 400
     current_time = time.time()
     if username in ngl_log and current_time - ngl_log[username] < 30:
-        return jsonify({'error': 'This username has been used recently. Please wait 30 seconds before trying again.'}), 429
+        return jsonify({'error': 'Username này vừa dùng. Đợi 30 giây rồi thử lại.'}), 429
     user_id = username
     stop_flag = threading.Event()
     STOP_FLAGS[user_id] = stop_flag
@@ -85,7 +86,7 @@ def send_ngl():
         thread = threading.Thread(target=send_ngl_message, args=(username, message, user_id, stop_flag))
         thread.start()
         ngl_log[username] = current_time
-        return jsonify({'message': f'NGL message sent to {username}. Please wait for completion.'})
+        return jsonify({'message': f'Đã gửi message ẩn danh đến {username}. Chờ kết quả.'})
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
@@ -113,9 +114,9 @@ def send_ngl_message(username, message, user_id, stop_flag):
             response = requests.post('https://ngl.link/api/submit', headers=headers, data=data, timeout=10)
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
-            print(f'Error sending to NGL: {e}')
+            print(f'Lỗi gửi đến NGL: {e}')
     with user_locks[user_id]:
         STOP_FLAGS.pop(user_id, None)
         user_locks.pop(user_id, None)
 
-# KHÔNG cần app.run() nếu dùng Gunicorn
+# KHÔNG cần app.run() nếu dùng Render + gunicorn
