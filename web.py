@@ -7,6 +7,7 @@ import time
 import requests
 import threading
 import os
+import sms  # Import module chứa hàm send_message()
 
 app = Flask(__name__)
 request_log = {}
@@ -29,11 +30,9 @@ def send_sms():
         return jsonify({'error': 'Sai key rồi bạn.'}), 403
     if not sdt:
         return jsonify({'error': 'Thiếu số điện thoại'}), 400
-    # Bạn có thể gọi hàm xử lý trong sms.py tại đây, ví dụ:
-      result = sms.send_message(sdt)
-      return jsonify({'result': result})
-    return jsonify({'message': f'Đã nhận yêu cầu gửi SMS tới {sdt}'})
-    
+    result = sms.send_message(sdt)
+    return jsonify({'result': result})
+
 @app.route('/')
 def home():
     return render_template_string('''
@@ -119,6 +118,4 @@ def send_ngl_message(username, message, user_id, stop_flag):
         STOP_FLAGS.pop(user_id, None)
         user_locks.pop(user_id, None)
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 10000))
-    app.run(host='0.0.0.0', port=port)
+# KHÔNG cần app.run() nếu dùng Gunicorn
